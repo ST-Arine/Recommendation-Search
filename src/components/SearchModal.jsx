@@ -22,7 +22,7 @@ const MAX_LEGACY_RESULTS = 20
 
 // Legacy: search-only, no filter, and nothing renders until a search is submitted.
 // Styled to match the production "Add New Recommendation to Patient" modal.
-function LegacySearch({ recommendations, selectedId, onSelect, onFinish }) {
+function LegacySearch({ recommendations, selectedId, onSelect, onFinish, onClose }) {
   const [query, setQuery] = useState('')
   const [submittedQuery, setSubmittedQuery] = useState(null)
 
@@ -53,7 +53,7 @@ function LegacySearch({ recommendations, selectedId, onSelect, onFinish }) {
           type="button"
           className="legacy-modal-close"
           aria-label="Close"
-          onClick={handleCancel}
+          onClick={onClose}
         >
           &times;
         </button>
@@ -131,7 +131,7 @@ function CaretIcon() {
 
 // Modernized: full dataset loads up front, search and category filter both apply live.
 // Styled to match the "Select a Recommendation" modal design.
-function ModernSearch({ recommendations, categories, selectedId, onSelect, onFinish }) {
+function ModernSearch({ recommendations, categories, selectedId, onSelect, onFinish, onClose }) {
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState('')
 
@@ -158,7 +158,7 @@ function ModernSearch({ recommendations, categories, selectedId, onSelect, onFin
           type="button"
           className="modern-modal-close"
           aria-label="Close"
-          onClick={handleCancel}
+          onClick={onClose}
         >
           &times;
         </button>
@@ -233,13 +233,22 @@ function ModernSearch({ recommendations, categories, selectedId, onSelect, onFin
   )
 }
 
-function SearchModal({ recommendations, categories, condition, selectedId, onSelect, onFinish }) {
+function SearchModal({
+  recommendations,
+  categories,
+  condition,
+  selectedId,
+  onSelect,
+  onFinish,
+  onClose,
+}) {
   return condition === 'legacy' ? (
     <LegacySearch
       recommendations={recommendations}
       selectedId={selectedId}
       onSelect={onSelect}
       onFinish={onFinish}
+      onClose={onClose}
     />
   ) : (
     <ModernSearch
@@ -248,6 +257,7 @@ function SearchModal({ recommendations, categories, condition, selectedId, onSel
       selectedId={selectedId}
       onSelect={onSelect}
       onFinish={onFinish}
+      onClose={onClose}
     />
   )
 }

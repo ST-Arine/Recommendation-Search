@@ -17,7 +17,10 @@ export function logEvent(session, type, data = {}) {
   session.events.push({ type, t: Date.now() - session.startedAt, ...data })
 }
 
-export function endSession(session, { correctRecommendationId, confidence, notes }) {
+export function endSession(
+  session,
+  { correctRecommendationId, confidence, notes, abandoned = false } = {},
+) {
   const events = session.events
   const selectionEvents = events.filter((e) => e.type === 'selection_made')
   const lastSelection = selectionEvents[selectionEvents.length - 1]
@@ -26,6 +29,7 @@ export function endSession(session, { correctRecommendationId, confidence, notes
     participant_id: session.participantId,
     condition: session.condition,
     scenario_id: session.scenarioId,
+    abandoned,
     correct_selection: lastSelection
       ? lastSelection.recommendation_id === correctRecommendationId
       : false,

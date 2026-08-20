@@ -1,11 +1,10 @@
 import { useState } from 'react'
-import { advanceAbCounter, getAbAssignment } from '../lib/abAssignment'
+import { getAbAssignment } from '../lib/abAssignment'
 
 function LandingPage({ onLaunch }) {
   const [assignment] = useState(() => getAbAssignment())
 
   function handleLaunch(arm) {
-    advanceAbCounter()
     onLaunch(arm, assignment[arm])
   }
 

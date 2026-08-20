@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import LandingPage from './components/LandingPage'
 import SearchModal from './components/SearchModal'
 import SessionSummary from './components/SessionSummary'
 import { mockRecommendations, categories } from './lib/mockData'
+import { startSession, logEvent, endSession } from './lib/analytics'
 import './App.css'
 
 function App() {
@@ -10,12 +11,38 @@ function App() {
   const [condition, setCondition] = useState(null)
   const [selectedId, setSelectedId] = useState(null)
   const [taskDone, setTaskDone] = useState(false)
+  const sessionRef = useRef(null)
 
   const selectedRecommendation = mockRecommendations.find((r) => r.id === selectedId) ?? null
 
   function handleLaunch(selectedArm, mappedCondition) {
     setArm(selectedArm)
     setCondition(mappedCondition)
+    sessionRef.current = startSession({
+      participantId: null,
+      condition: mappedCondition,
+      scenarioId: null,
+    })
+    logEvent(sessionRef.current, 'modal_open')
+  }
+
+  function handleSelect(id) {
+    setSelectedId(id)
+    if (sessionRef.current && id) {
+      logEvent(sessionRef.current, 'selection_made', { recommendation_id: id })
+    }
+  }
+
+  function handleClose() {
+    if (sessionRef.current) {
+      logEvent(sessionRef.current, 'abandoned')
+      const record = endSession(sessionRef.current, { abandoned: true })
+      // TODO: insert into Supabase `sessions` table once wired up (see Section 4/5
+      // of the architecture doc). Logged for now so abandon behavior is visible.
+      console.log('[session] abandoned', record)
+      sessionRef.current = null
+    }
+    handleRestart()
   }
 
   function handleRestart() {
@@ -37,14 +64,17 @@ function App() {
       </header>
 
       {!taskDone && (
-        <SearchModal
-          recommendations={mockRecommendations}
-          categories={categories}
-          condition={condition}
-          selectedId={selectedId}
-          onSelect={setSelectedId}
-          onFinish={() => setTaskDone(true)}
-        />
+        <div className="modal-scrim">
+          <SearchModal
+            recommendations={mockRecommendations}
+            categories={categories}
+            condition={condition}
+            selectedId={selectedId}
+            onSelect={handleSelect}
+            onFinish={() => setTaskDone(true)}
+            onClose={handleClose}
+          />
+        </div>
       )}
 
       {taskDone && (
